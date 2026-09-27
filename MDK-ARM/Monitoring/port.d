@@ -1,0 +1,12 @@
+monitoring\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3/port.c
+monitoring\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+monitoring\port.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+monitoring\port.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+monitoring\port.o: ../Core/Inc/FreeRTOSConfig.h
+monitoring\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+monitoring\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+monitoring\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+monitoring\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3/portmacro.h
+monitoring\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+monitoring\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+monitoring\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
