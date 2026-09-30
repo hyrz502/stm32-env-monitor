@@ -53,3 +53,5 @@ monitoring\task_serial.o: ..\Bsp\Inc\bsp_uart.h
 monitoring\task_serial.o: ../Core/Inc/gpio.h
 monitoring\task_serial.o: ../Core/Inc/usart.h
 monitoring\task_serial.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+monitoring\task_serial.o: ..\App\Inc\app_rtos.h
+monitoring\task_serial.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h

@@ -671,19 +671,9 @@
               <FilePath>..\Bsp\Src\bsp_gpio.c</FilePath>
             </File>
             <File>
-              <FileName>bsp_lights.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Bsp\Src\bsp_lights.c</FilePath>
-            </File>
-            <File>
               <FileName>bsp_oled.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Bsp\Src\bsp_oled.c</FilePath>
-            </File>
-            <File>
-              <FileName>bsp_w25q64.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Bsp\Src\bsp_w25q64.c</FilePath>
             </File>
             <File>
               <FileName>bsp_uart.c</FileName>

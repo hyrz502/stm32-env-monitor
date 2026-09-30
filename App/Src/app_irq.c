@@ -9,10 +9,11 @@
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
-	if(huart->Instance!=USART1) return;
-	if(Size==0) return;
+	if(huart->Instance!=USART1||Size<=0U) return;
 	
-	bsp_uart_rxStart();
+	rb_write_block(rb,dma_rx_buf,Size);
+	
+	bsp_uart_rxStart(dma_rx_buf,sizeof(dma_rx_buf));
 	
 	BaseType_t HigherPriorityTaskWoken=pdFALSE;
 	vTaskNotifyGiveFromISR(SerialTaskHandle,&HigherPriorityTaskWoken);

@@ -101,7 +101,7 @@ int main(void)
   MX_ADC1_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  rb_init(rb,shortage,BUFFER_MAXSIZE);
+  
   /* USER CODE END 2 */
 
   /* Init scheduler */

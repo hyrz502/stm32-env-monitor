@@ -5,7 +5,7 @@
 #include "app_config.h"
 
 extern ring_buffer_t* rb;
-extern uint8_t shortage[SHORTAGE];
+extern uint8_t shortage[BUFFER_MAXSIZE];
 
 
 #endif /* __APP_DATA_H__ */

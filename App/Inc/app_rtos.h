@@ -6,5 +6,7 @@
 extern osThreadId_t SerialTaskHandle;
 extern osThreadId_t KeyTaskHandle;
 extern osThreadId_t CollectTaskHandle;
+extern osMutexId_t myMutex01Handle;
+
 
 #endif

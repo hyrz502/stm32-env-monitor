@@ -70,7 +70,7 @@ uint32_t rb_read_block(ring_buffer_t* rb,uint8_t* out,uint32_t len)
         return 0U;
     }
     uint32_t cnt=0U;
-    while(cnt<len&&rb_read(rb,out)==ERR_OK)
+    while(cnt<len&&rb_read(rb,&out[cnt])==ERR_OK)
     {
         cnt++;
     }

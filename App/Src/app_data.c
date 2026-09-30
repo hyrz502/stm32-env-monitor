@@ -1,4 +1,6 @@
 #include "app_data.h"
 
-ring_buffer_t* rb;
-uint8_t shortage[SHORTAGE];
+static ring_buffer_t s_rb;
+ring_buffer_t* rb = &s_rb;
+
+uint8_t shortage[BUFFER_MAXSIZE];
