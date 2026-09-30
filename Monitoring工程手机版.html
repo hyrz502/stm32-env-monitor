@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>STM32 智能环境监控终端 - 工程文档</title>
+<style>
+:root{
+  --bg:#f5f7fa;--card:#fff;--text:#1a202c;--muted:#64748b;
+  --accent:#2563eb;--accent-light:#dbeafe;--border:#e2e8f0;
+  --code-bg:#0f172a;--code-text:#e2e8f0;--kw:#c084fc;--str:#86efac;
+  --num:#fbbf24;--cmt:#64748b;--fn:#60a5fa;--type:#f472b6;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:15px}
+.header{position:sticky;top:0;z-index:100;background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.header h1{margin:0;font-size:17px;font-weight:600}
+.header .sub{font-size:12px;opacity:.85;margin-top:2px}
+.nav{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;background:#fff;border-bottom:1px solid var(--border);position:sticky;top:57px;z-index:99;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav a{flex-shrink:0;padding:6px 12px;background:var(--accent-light);color:var(--accent);border-radius:16px;font-size:13px;text-decoration:none;white-space:nowrap;font-weight:500}
+.container{max-width:860px;margin:0 auto;padding:12px}
+.card{background:var(--card);border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card h2{margin:0 0 12px;font-size:17px;color:var(--accent);border-left:4px solid var(--accent);padding-left:10px}
+.card h3{margin:16px 0 8px;font-size:15px;color:#334155}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}
+th,td{border:1px solid var(--border);padding:7px 8px;text-align:left}
+th{background:var(--accent-light);color:var(--accent);font-weight:600}
+tr:nth-child(even) td{background:#f8fafc}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.tag-blue{background:#dbeafe;color:#1e40af}
+.tag-green{background:#dcfce7;color:#15803d}
+.tag-orange{background:#ffedd5;color:#c2410c}
+.tag-purple{background:#f3e8ff;color:#7c3aed}
+.code-block{background:var(--code-bg);border-radius:8px;overflow:hidden;margin:10px 0}
+.code-header{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#1e293b;color:#cbd5e1;font-size:12px;font-family:monospace}
+.code-header .copy{background:#334155;border:none;color:#e2e8f0;padding:3px 10px;border-radius:6px;font-size:11px;cursor:pointer}
+.code-header .copy:active{background:#475569}
+pre{margin:0;padding:12px;overflow-x:auto;font-size:12.5px;line-height:1.6;color:var(--code-text);font-family:"SF Mono",Menlo,Consolas,monospace;max-height:600px;-webkit-overflow-scrolling:touch}
+details{margin:8px 0}
+details summary{cursor:pointer;padding:10px 12px;background:#f1f5f9;border-radius:8px;font-weight:600;font-size:14px;color:#334155;list-style:none;display:flex;justify-content:space-between;align-items:center}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:"▼";font-size:10px;color:var(--muted);transition:transform .2s}
+details[open] summary::after{transform:rotate(180deg)}
+details[open] summary{border-bottom-left-radius:0;border-bottom-right-radius:0}
+.kw{color:var(--kw)}.str{color:var(--str)}.num{color:var(--num)}.cmt{color:var(--cmt)}.fn{color:var(--fn)}.type{color:var(--type)}.dir{color:#f472b6}
+.protocol{background:#f8fafc;border-left:3px solid var(--accent);padding:10px 12px;font-family:monospace;font-size:13px;border-radius:6px;margin:8px 0;word-break:break-all}
+.arch-box{background:linear-gradient(135deg,#eff6ff,#dbeafe);border-radius:10px;padding:12px;margin:8px 0}
+.footer{text-align:center;padding:20px;color:var(--muted);font-size:12px}
+@media(max-width:600px){
+  body{font-size:14px}
+  .container{padding:8px}
+  .card{padding:12px;border-radius:10px}
+  pre{font-size:11.5px;padding:10px}
+  th,td{padding:5px 6px;font-size:12px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>STM32 智能环境监控终端</h1>
+  <div class="sub">FreeRTOS · STM32F103 · DHT11 · OLED · 工程源码文档</div>
+</div>
+
+<div class="nav">
+  <a href="#overview">概览</a>
+  <a href="#hardware">硬件</a>
+  <a href="#arch">系统架构</a>
+  <a href="#protocol">串口协议</a>
+  <a href="#pins">引脚分配</a>
+  <a href="#code">源码</a>
+</div>
+
+<div class="container">
+
+<div class="card" id="overview">
+  <h2>项目概览</h2>
+  <p>基于 FreeRTOS 的多任务环境监控终端，使用 STM32F103 + DHT11 + OLED 实现 <strong>温湿度采集、光照检测、本地显示、串口远程控制、超限报警</strong> 功能。</p>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+    <span class="tag tag-blue">STM32F103C8T6</span>
+    <span class="tag tag-green">FreeRTOS</span>
+    <span class="tag tag-orange">Keil MDK-ARM 5</span>
+    <span class="tag tag-purple">6 种 IPC 机制</span>
+  </div>
+</div>
+
+<div class="card" id="hardware">
+  <h2>硬件清单</h2>
+  <table>
+    <tr><th>模块</th><th>型号</th><th>接口</th><th>用途</th></tr>
+    <tr><td>主控</td><td>STM32F103C8T6</td><td>—</td><td>Cortex-M3, 72MHz</td></tr>
+    <tr><td>温湿度传感器</td><td>DHT11</td><td>GPIO 单总线</td><td>温度+湿度采集</td></tr>
+    <tr><td>显示屏</td><td>0.96寸 OLED</td><td>I2C</td><td>本地数据显示</td></tr>
+    <tr><td>光敏传感器</td><td>光敏电阻</td><td>ADC</td><td>光照强度采集</td></tr>
+    <tr><td>LED</td><td>—</td><td>GPIO</td><td>报警指示</td></tr>
+    <tr><td>按键 x2</td><td>—</td><td>GPIO + EXTI</td><td>页面切换/配置调节</td></tr>
+    <tr><td>串口</td><td>CH340/USB-TTL</td><td>UART1</td><td>上位机通信</td></tr>
+  </table>
+</div>
+
+<div class="card" id="arch">
+  <h2>系统架构</h2>
+  <h3>任务划分</h3>
+  <table>
+    <tr><th>任务</th><th>优先级</th><th>栈大小</th><th>职责</th></tr>
+    <tr><td>CollectTask</td><td>Normal</td><td>128*4</td><td>周期采集温湿度/光照，维护历史数据，设置报警事件标志</td></tr>
+    <tr><td>ShowTask</td><td>Low</td><td>256*4</td><td>OLED双页面刷新显示，本地时间计时</td></tr>
+    <tr><td>SerialTask</td><td>Low</td><td>256*4</td><td>串口DMA接收 + 帧协议解析 + 命令执行</td></tr>
+    <tr><td>AlarmTask</td><td>Normal1</td><td>128*4</td><td>事件组多条件等待，控制LED报警闪烁</td></tr>
+    <tr><td>KeyTask</td><td>Low</td><td>128*4</td><td>按键消抖 + 长短按检测 + 页面/配置操作</td></tr>
+  </table>
+
+  <h3>FreeRTOS 通信机制（6种）</h3>
+  <table>
+    <tr><th>机制</th><th>对象</th><th>使用场景</th></tr>
+    <tr><td>任务通知</td><td>CollectTask / KeyTask</td><td>软件定时器回调通知采集；EXTI中断通知按键</td></tr>
+    <tr><td>队列</td><td>LogQueue</td><td>采集任务推送历史数据，串口请求时取出</td></tr>
+    <tr><td>二值信号量</td><td>SerialBinarySem / ADCBinarySem</td><td>串口DMA空闲中断唤醒串口任务；ADC DMA完成唤醒采集</td></tr>
+    <tr><td>互斥锁</td><td>myMutex01</td><td>保护共享变量防止多任务读写冲突</td></tr>
+    <tr><td>事件组</td><td>AlarmEvent</td><td>温度超阈值 + 自动报警开启 两条件同时满足才报警</td></tr>
+    <tr><td>软件定时器</td><td>CollectTimer</td><td>周期定时触发采集，回调中发送任务通知</td></tr>
+  </table>
+
+  <h3>中断设计</h3>
+  <table>
+    <tr><th>中断</th><th>回调函数</th><th>动作</th></tr>
+    <tr><td>UART空闲中断</td><td>HAL_UARTEx_RxEventCallback</td><td>DMA接收完成，唤醒SerialTask</td></tr>
+    <tr><td>GPIO外部中断</td><td>HAL_GPIO_EXTI_Callback</td><td>按键触发，唤醒KeyTask</td></tr>
+    <tr><td>ADC转换完成</td><td>HAL_ADC_ConvCpltCallback</td><td>DMA搬运完成，唤醒CollectTask</td></tr>
+  </table>
+</div>
+
+<div class="card" id="protocol">
+  <h2>串口通信协议</h2>
+  <h3>帧格式</h3>
+  <div class="protocol">[0xAA] [LEN] [CMD] [DATA...] [XOR] [0x55]</div>
+  <table>
+    <tr><th>字段</th><th>说明</th></tr>
+    <tr><td>0xAA</td><td>帧头</td></tr>
+    <tr><td>LEN</td><td>CMD + DATA + XOR 总字节数</td></tr>
+    <tr><td>CMD</td><td>命令码</td></tr>
+    <tr><td>DATA</td><td>参数（0~N字节）</td></tr>
+    <tr><td>XOR</td><td>异或校验（CMD到DATA逐字节异或）</td></tr>
+    <tr><td>0x55</td><td>帧尾</td></tr>
+  </table>
+
+  <h3>命令表</h3>
+  <table>
+    <tr><th>CMD</th><th>功能</th><th>DATA参数</th><th>设备回复示例</th></tr>
+    <tr><td>0x01</td><td>请求当前数据</td><td>无</td><td>Temp:25C Light:3300mv Threshold:30C Interval:1s</td></tr>
+    <tr><td>0x02</td><td>设置采样间隔</td><td>1~60（秒）</td><td>OK / ERR</td></tr>
+    <tr><td>0x03</td><td>设置报警阈值</td><td>1~127（℃）</td><td>OK / ERR</td></tr>
+    <tr><td>0x04</td><td>控制LED</td><td>0=关/1=开/2=闪烁</td><td>—</td></tr>
+    <tr><td>0x05</td><td>请求历史数据</td><td>无</td><td>10条历史记录</td></tr>
+    <tr><td>0x06</td><td>自动报警开关</td><td>1=开/0=关</td><td>AutoAlarm ON / OFF</td></tr>
+  </table>
+
+  <h3>命令示例</h3>
+  <div class="protocol">设置采样间隔为5秒：AA 03 02 05 04 55<br>
+设置报警阈值为35℃：AA 03 03 23 20 55<br>
+请求当前数据：AA 03 01 00 01 55<br>
+开启自动报警：AA 03 06 01 07 55</div>
+</div>
+
+<div class="card" id="pins">
+  <h2>引脚分配</h2>
+  <table>
+    <tr><th>引脚</th><th>外设</th><th>用途</th></tr>
+    <tr><td>PA9 / PA10</td><td>USART1</td><td>串口通信（TX/RX）</td></tr>
+    <tr><td>PB6 / PB7</td><td>I2C1</td><td>OLED显示屏</td></tr>
+    <tr><td>PA0</td><td>ADC1_CH0</td><td>光敏传感器</td></tr>
+    <tr><td>PB0</td><td>GPIO Output</td><td>LED</td></tr>
+    <tr><td>PA11</td><td>GPIO Output</td><td>DHT11 数据线</td></tr>
+    <tr><td>PA12 / PA15</td><td>GPIO Input + EXTI</td><td>按键1 / 按键2</td></tr>
+  </table>
+</div>
+
+<div class="card" id="code">
+  <h2>核心源码</h2>
+  <p style="color:var(--muted);font-size:13px">点击展开各模块源码，支持左右滑动查看。</p>
+
+  <details open>
+    <summary>app_config.h — 协议与配置宏定义</summary>
+    <div class="code-block"><div class="code-header">App/Inc/app_config.h</div><pre id="c1"></pre></div>
+  </details>
+
+  <details>
+    <summary>app_data.h — 全局共享数据声明</summary>
+    <div class="code-block"><div class="code-header">App/Inc/app_data.h</div><pre id="c2"></pre></div>
+  </details>
+
+  <details>
+    <summary>freertos.c — FreeRTOS 任务与 IPC 创建</summary>
+    <div class="code-block"><div class="code-header">Core/Src/freertos.c</div><pre id="c3"></pre></div>
+  </details>
+
+  <details>
+    <summary>task_collect.c — 采集任务</summary>
+    <div class="code-block"><div class="code-header">App/Src/task_collect.c</div><pre id="c4"></pre></div>
+  </details>
+
+  <details>
+    <summary>task_serial.c — 串口任务（帧协议解析）</summary>
+    <div class="code-block"><div class="code-header">App/Src/task_serial.c</div><pre id="c5"></pre></div>
+  </details>
+
+  <details>
+    <summary>task_display.c — OLED 显示任务</summary>
+    <div class="code-block"><div class="code-header">App/Src/task_display.c</div><pre id="c6"></pre></div>
+  </details>
+
+  <details>
+    <summary>task_alarm.c — 报警任务</summary>
+    <div class="code-block"><div class="code-header">App/Src/task_alarm.c</div><pre id="c7"></pre></div>
+  </details>
+
+  <details>
+    <summary>task_key.c — 按键任务</summary>
+    <div class="code-block"><div class="code-header">App/Src/task_key.c</div><pre id="c8"></pre></div>
+  </details>
+
+  <details>
+    <summary>app_irq.c — 中断回调</summary>
+    <div class="code-block"><div class="code-header">App/Src/app_irq.c</div><pre id="c9"></pre></div>
+  </details>
+
+  <details>
+    <summary>main.c — 主程序入口</summary>
+    <div class="code-block"><div class="code-header">Core/Src/main.c</div><pre id="c10"></pre></div>
+  </details>
+</div>
+
+<div class="footer">STM32 智能环境监控终端工程 · 生成时间 2026-09-30</div>
+</div>
+
+<script>
+// 简易 C 语法高亮
+function hl(code){
+  // 先处理注释和字符串，避免被关键字替换干扰
+  let out = code;
+  // 注释
+  out = out.replace(/\/\/[^\n]*/g, m => '§CMT§'+m+'§END§');
+  out = out.replace(/\/\*[\s\S]*?\*\//g, m => '§CMT§'+m+'§END§');
+  // 字符串
+  out = out.replace(/"([^"\\]|\\.)*"/g, m => '§STR§'+m+'§END§');
+  out = out.replace(/'([^'\\]|\\.)*'/g, m => '§STR§'+m+'§END§');
+  // 预处理
+  out = out.replace(/(^|\s)(#\s*\w+)/g, '$1§DIR§$2§END§');
+  // 关键字
+  const kws = ['void','uint8_t','uint16_t','uint32_t','int','char','if','else','for','while','switch','case','break','return','const','static','extern','define','include','ifndef','endif','define','typedef','struct','enum','sizeof','NULL','true','false'];
+  kws.forEach(k => {
+    const re = new RegExp('\\b'+k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','g');
+    out = out.replace(re, '§KW§'+k+'§END§');
+  });
+  // 函数调用
+  out = out.replace(/\b([a-zA-Z_]\w*)\s*\(/g, '§FN§$1§END§(');
+  // 数字
+  out = out.replace(/\b(\d+[uUlL]*|0x[0-9a-fA-F]+)\b/g, '§NUM§$1§END§');
+  // 恢复标签
+  out = out.replace(/§CMT§([\s\S]*?)§END§/g,'<span class="cmt">$1</span>');
+  out = out.replace(/§STR§([\s\S]*?)§END§/g,'<span class="str">$1</span>');
+  out = out.replace(/§DIR§([\s\S]*?)§END§/g,'<span class="dir">$1</span>');
+  out = out.replace(/§KW§([\s\S]*?)§END§/g,'<span class="kw">$1</span>');
+  out = out.replace(/§FN§([\s\S]*?)§END§/g,'<span class="fn">$1</span>');
+  out = out.replace(/§NUM§([\s\S]*?)§END§/g,'<span class="num">$1</span>');
+  return out;
+}
+</script>
+
+<!-- 源码数据 -->
+<script id="src-app_config" type="text/plain">#ifndef __APP_CONFIG_H__
+#define __APP_CONFIG_H__
+
+#define BUFFER_MAXSIZE 256U
+
+typedef uint16_t LogData_t[3][10];   /* [0]=Temp [1]=Humi [2]=光强电压(mV) */
+
+/* ======================== 串口帧协议 ======================== */
+/* [0xAA] [LEN] [CMD] [DATA...] [CRC] [0x55] ，CRC = CMD..DATA 的异或 */
+#define SERIAL_MAXSIZE   20U
+#define FRAME_H          0xAA       /* 帧头 */
+#define FRAME_T          0x55       /* 帧尾 */
+
+/* 命令码 */
+#define CMD_GET_CURRENT  0x01       /* 查询当前数据 */
+#define CMD_SET_INTERVAL 0x02       /* 设置采样间隔(1~60s) */
+#define CMD_SET_THRESHOLD 0x03      /* 设置报警阈值(1~127) */
+#define CMD_SET_LED      0x04       /* 控制 LED: 0灭 1亮 2闪 */
+#define CMD_GET_HISTORY  0x05       /* 请求历史数据 */
+#define CMD_ALARM_SWITCH 0x06       /* 自动报警开关: 1=ON 其它=OFF */
+
+/* LED 模式 */
+#define LED_MODE_OFF     0x00
+#define LED_MODE_ON      0x88
+#define LED_MODE_BLINK   0x99
+
+/* 事件标志位 */
+#define BIT_TEMP_OVER    (1UL << 0)  /* 温度超过阈值 */
+#define BIT_AUTO_ALARM   (1UL << 1)  /* 自动报警已开启 */
+
+/* 自动报警开关取值 */
+#define AUTO_ALARM_OFF   0U
+#define AUTO_ALARM_ON    1U
+
+/* 默认参数与范围 */
+#define DEFAULT_THRESHOLD   30U
+#define DEFAULT_PERIOD      1U
+#define PERIOD_MAX          60U
+#define THRESHOLD_MAX       127U
+#define PERIOD_U8_MAX       128U
+
+#endif /* __APP_CONFIG_H__ */</script>
+
+<script id="src-app_data" type="text/plain">#ifndef __APP_DATA_H__
+#define __APP_DATA_H__
+
+#include "ring_buffer.h"
+#include "app_config.h"
+
+extern ring_buffer_t* rb;
+extern uint8_t shortage[BUFFER_MAXSIZE];
+
+/* 业务共享数据（跨任务，由 myMutex01 / 事件 / 通知保护） */
+extern uint8_t   g_temp;          /* 温度 ℃ */
+extern uint8_t   g_humi;          /* 湿度 %RH */
+extern uint16_t  g_light_raw;     /* 光照 ADC 原始值 */
+extern uint8_t   g_threshold;     /* 报警阈值 ℃ */
+extern uint8_t   g_period;        /* 采集周期 s */
+extern uint8_t   g_page_flag;     /* 显示页：1=首页 2=配置 */
+extern uint8_t   g_led_flag;      /* LED 模式 */
+extern uint8_t   g_arrow;         /* 配置页箭头位置 1~7 */
+extern uint8_t   g_auto_alarm;    /* 自动报警开关 */
+
+#endif /* __APP_DATA_H__ */</script>
+
+<script id="src-freertos" type="text/plain">#include "FreeRTOS.h"
+#include "task.h"
+#include "main.h"
+#include "cmsis_os.h"
+#include "app_config.h"
+#include "app_rtos.h"
+#include "app_task.h"
+#include "bsp_oled.h"
+
+/* 任务句柄 & 属性 */
+osThreadId_t CollectTaskHandle;   /* priority: Normal,  stack: 128*4 */
+osThreadId_t ShowTaskHandle;      /* priority: Low,     stack: 256*4 */
+osThreadId_t SerialTaskHandle;    /* priority: Low,     stack: 256*4 */
+osThreadId_t AlarmTaskHandle;     /* priority: Normal1, stack: 128*4 */
+osThreadId_t KeyTaskHandle;       /* priority: Low,     stack: 128*4 */
+
+osMessageQueueId_t LogQueueHandle;
+osTimerId_t        CollectTimerHandle;
+osMutexId_t        myMutex01Handle;
+osSemaphoreId_t    ADCBinarySemHandle;
+osEventFlagsId_t   AlarmEventHandle;
+
+void MX_FREERTOS_Init(void) {
+  OLED_Init();
+  myMutex01Handle  = osMutexNew(&myMutex01_attributes);
+  ADCBinarySemHandle = osSemaphoreNew(1, 0, &ADCBinarySem_attributes);
+  CollectTimerHandle = osTimerNew(Callback01, osTimerPeriodic, NULL, &CollectTimer_attributes);
+  LogQueueHandle   = osMessageQueueNew(4, sizeof(LogData_t), &LogQueue_attributes);
+
+  CollectTaskHandle = osThreadNew(StartCollectTask, NULL, &CollectTask_attributes);
+  ShowTaskHandle    = osThreadNew(StartShowTask, NULL, &ShowTask_attributes);
+  SerialTaskHandle  = osThreadNew(StartSerialTask, NULL, &SerialTask_attributes);
+  AlarmTaskHandle   = osThreadNew(StartAlarmTask, NULL, &AlarmTask_attributes);
+  KeyTaskHandle     = osThreadNew(StartKeyTask, NULL, &KeyTask_attributes);
+
+  AlarmEventHandle = osEventFlagsNew(&AlarmEvent_attributes);
+}
+
+/* 5 个任务入口转发 */
+void StartCollectTask(void *a){ CollectTask_Entry(a); }
+void StartShowTask(void *a)   { DisplayTask_Entry(a); }
+void StartSerialTask(void *a) { SerialTask_Entry(a); }
+void StartAlarmTask(void *a)  { AlarmTask_Entry(a); }
+void StartKeyTask(void *a)    { KeyTask_Entry(a); }
+
+/* 定时器回调：到达采集周期，唤醒采集任务 */
+void Callback01(void *argument){
+  xTaskNotifyGive(CollectTaskHandle);
+}</script>
+
+<script id="src-collect" type="text/plain">#include "app_task.h"
+#include "app_data.h"
+#include "app_rtos.h"
+#include "app_config.h"
+#include "bsp_uart.h"
+#include "bsp_dht11.h"
+#include "bsp_gpio.h"
+#include "adc.h"
+#include "dma.h"
+#include <string.h>
+
+/**
+  * @brief  采集任务：由 CollectTimer 周期通知唤醒。
+  *         采样光照 ADC / 温湿度，更新共享数据，写历史 log，
+  *         若开启自动报警则上报当前状态帧。
+  */
+void CollectTask_Entry(void *argument)
+{
+  (void)argument;
+  uint8_t  local_period = 1;
+  uint16_t Log[3][10]   = {0};
+  uint8_t  times        = 0;
+  uint8_t  sendbuf[64];
+
+  osTimerStart(CollectTimerHandle, 1000);
+
+  for(;;)
+  {
+    ulTaskNotifyTake(pdTRUE, portMAX_DELAY);   /* 等待定时器通知 */
+
+    osMutexAcquire(myMutex01Handle, osWaitForever);
+
+    /* 采集周期变化 -> 重设定时器 */
+    if(local_period != g_period)
+    {
+      osTimerStop(CollectTimerHandle);
+      osTimerStart(CollectTimerHandle, 1000u * g_period);
+      local_period = g_period;
+    }
+
+    /* 历史数据移位滚动 */
+    if(times >= 10)
+    {
+      for(uint8_t i=0; i<9; i++)
+      {
+        Log[0][i] = Log[0][i+1];
+        Log[1][i] = Log[1][i+1];
+        Log[2][i] = Log[2][i+1];
+      }
+      times = 9;
+    }
+
+    if(g_led_flag == LED_MODE_OFF)
+      bsp_gpio_write(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+
+    /* 光照 ADC 采样 */
+    osSemaphoreAcquire(ADCBinarySemHandle, 0);
+    HAL_ADC_Start_DMA(&hadc1, (uint32_t*)&g_light_raw, 1);
+    osSemaphoreAcquire(ADCBinarySemHandle, osWaitForever);
+    HAL_ADC_Stop_DMA(&hadc1);
+
+    /* 温湿度采样 */
+    Bsp_Dht11Sample(&g_temp, &g_humi);
+
+    uint8_t  temp  = g_temp;
+    uint8_t  humi  = g_humi;
+    uint8_t  thr   = g_threshold;
+    uint8_t  led   = g_led_flag;
+    uint8_t  alarm = g_auto_alarm;
+    uint16_t volt  = (uint16_t)(g_light_raw * 3300U / 4095U);
+
+    if(temp >= thr) osEventFlagsSet(AlarmEventHandle, BIT_TEMP_OVER);
+    else            osEventFlagsClear(AlarmEventHandle, BIT_TEMP_OVER);
+
+    Log[0][times] = temp;
+    Log[1][times] = humi;
+    Log[2][times] = volt;
+
+    osMutexRelease(myMutex01Handle);
+
+    /* 自动报警上报（锁外发送避免阻塞） */
+    if(alarm == AUTO_ALARM_ON)
+    {
+      memset(sendbuf, 0, sizeof(sendbuf));
+      if(led == LED_MODE_BLINK && temp < thr)
+        sprintf((char*)sendbuf, "[CLEAR] Temp:%dC Threshold:%dC\r\n", temp, thr);
+      else if(temp < thr)
+        sprintf((char*)sendbuf, "[NORMAL] Temp:%dC Threshold:%dC\r\n", temp, thr);
+      else
+        sprintf((char*)sendbuf, "[ALARM] Temp:%dC Threshold:%dC\r\n", temp, thr);
+      bsp_uart_transmit(sendbuf, (uint32_t)strlen((char*)sendbuf), 200);
+    }
+
+    osMessageQueuePut(LogQueueHandle, Log, 0, 0);
+    times++;
+  }
+}</script>
+
+<script id="src-serial" type="text/plain">/***
+*   @note: 串口助手{波特率：115200，文本模式接收，hex协议帧发送}
+***/
+#include "app_task.h"
+#include "app_data.h"
+#include "app_rtos.h"
+#include "app_config.h"
+#include "bsp_uart.h"
+#include "bsp_gpio.h"
+#include <string.h>
+
+/* 帧格式: [0xAA][LEN][CMD][DATA...][CRC][0x55]
+ * CRC = CMD..DATA 的异或 */
+
+static uint8_t App_FrameXor(const uint8_t *pData, uint16_t len)
+{
+  uint8_t xorv = 0;
+  for(uint16_t i = 2; i < len - 2; i++)
+    xorv ^= pData[i];
+  return xorv;
+}
+
+static uint8_t App_FrameValid(const uint8_t *pData, uint16_t len)
+{
+  if(len < 5) return 0;
+  if(pData[0] != FRAME_H || pData[len-1] != FRAME_T) return 0;
+  if(pData[len-2] != App_FrameXor(pData, len)) return 0;
+  return 1;
+}
+
+static void App_SerialProcess(const uint8_t *frame, uint16_t len)
+{
+  uint8_t sendbuf[64];
+  char *ack;
+
+  switch(frame[2])
+  {
+    case CMD_GET_CURRENT:   /* 请求当前数据 */
+    {
+      uint16_t volt;
+      osMutexAcquire(myMutex01Handle, osWaitForever);
+      volt = (uint16_t)(g_light_raw * 3300U / 4095U);
+      sprintf((char*)sendbuf, "Temp:%dC Light:%dmv Threshold:%dC Interval:%ds\r\n",
+              g_temp, volt, g_threshold, g_period);
+      osMutexRelease(myMutex01Handle);
+      bsp_uart_transmit(sendbuf, strlen((char*)sendbuf), 200);
+    }
+    break;
+
+    case CMD_SET_INTERVAL:  /* 设置采样间隔 1~60s */
+      if(frame[3] >= 1 && frame[3] <= 60){
+        osMutexAcquire(myMutex01Handle, osWaitForever);
+        g_period = frame[3];
+        osMutexRelease(myMutex01Handle);
+        ack = "OK\r\n";
+      } else ack = "ERR\r\n";
+      bsp_uart_transmit((uint8_t*)ack, strlen(ack), 200);
+      break;
+
+    case CMD_SET_THRESHOLD: /* 设置报警阈值 1~127 */
+      if(frame[3] >= 1 && frame[3] <= 127){
+        osMutexAcquire(myMutex01Handle, osWaitForever);
+        g_threshold = frame[3];
+        osMutexRelease(myMutex01Handle);
+        ack = "OK\r\n";
+      } else ack = "ERR\r\n";
+      bsp_uart_transmit((uint8_t*)ack, strlen(ack), 200);
+      break;
+
+    case CMD_SET_LED:       /* 控制 LED: 0灭 1亮 2闪 */
+      osMutexAcquire(myMutex01Handle, osWaitForever);
+      if(frame[3] == 0)      { g_led_flag = LED_MODE_OFF;   bsp_gpio_write(LED_GPIO_Port,LED_Pin,GPIO_PIN_RESET); }
+      else if(frame[3] == 1) { g_led_flag = LED_MODE_ON;    bsp_gpio_write(LED_GPIO_Port,LED_Pin,GPIO_PIN_SET); }
+      else if(frame[3] == 2) { g_led_flag = LED_MODE_BLINK; }
+      osMutexRelease(myMutex01Handle);
+      break;
+
+    case CMD_GET_HISTORY:   /* 请求历史数据 */
+    {
+      LogData_t log = {0};
+      if(osMessageQueueGet(LogQueueHandle, log, 0, 200) == osOK){
+        for(uint8_t i = 0; i < 10; i++){
+          sprintf((char*)sendbuf, "%d: Temp:%dC Humi:%d%%RH Light:%dmv\r\n",
+                  i+1, log[0][i], log[1][i], log[2][i]);
+          bsp_uart_transmit(sendbuf, strlen((char*)sendbuf), 200);
+        }
+      }
+    }
+    break;
+
+    case CMD_ALARM_SWITCH:  /* 自动报警开关 */
+      osMutexAcquire(myMutex01Handle, osWaitForever);
+      if(frame[3] == 1){ g_auto_alarm = AUTO_ALARM_ON;  osEventFlagsSet(AlarmEventHandle, BIT_AUTO_ALARM);   ack="AutoAlarm ON\r\n"; }
+      else            { g_auto_alarm = AUTO_ALARM_OFF; osEventFlagsClear(AlarmEventHandle, BIT_AUTO_ALARM); ack="AutoAlarm OFF\r\n"; }
+      osMutexRelease(myMutex01Handle);
+      bsp_uart_transmit((uint8_t*)ack, strlen(ack), 200);
+      break;
+
+    default:
+      ack = "Cmd is warning\r\n";
+      bsp_uart_transmit((uint8_t*)ack, strlen(ack), 200);
+      break;
+  }
+}
+
+void SerialTask_Entry(void *argument)
+{
+  (void)argument;
+  rb_init(rb, shortage, BUFFER_MAXSIZE);
+  bsp_uart_rxStart(dma_rx_buf, sizeof(dma_rx_buf));
+
+  uint8_t  frame[SERIAL_MAXSIZE];
+  uint16_t fcnt    = 0;
+  uint8_t  started = 0;
+
+  for(;;)
+  {
+    ulTaskNotifyTake(pdTRUE, portMAX_DELAY);   /* 等待串口中断通知 */
+
+    while(rb_available(rb) > 0U)
+    {
+      uint8_t b;
+      if(rb_read(rb, &b) != ERR_OK) break;
+
+      if(!started){
+        if(b == FRAME_H){ started = 1; fcnt = 0; frame[fcnt++] = b; }
+      } else {
+        frame[fcnt++] = b;
+        if(b == FRAME_T){
+          if(App_FrameValid(frame, fcnt)) App_SerialProcess(frame, fcnt);
+          started = 0; fcnt = 0;
+        } else if(fcnt >= SERIAL_MAXSIZE){
+          started = 0; fcnt = 0;   /* 超长丢弃 */
+        }
+      }
+    }
+  }
+}</script>
+
+<script id="src-display" type="text/plain">#include "app_task.h"
+#include "app_data.h"
+#include "app_rtos.h"
+#include "app_config.h"
+#include "bsp_oled.h"
+#include <string.h>
+
+/**
+  * @brief  显示任务：维护运行时钟，按 g_page_flag 绘制首页/配置页。
+  */
+void DisplayTask_Entry(void *argument)
+{
+  (void)argument;
+  uint32_t s    = 0;
+  uint16_t min  = 0;
+  uint8_t  hour = 0;
+
+  for(;;)
+  {
+    if(++s >= 60){ s=0; if(++min>=60){ min=0; if(++hour>=24) hour=0; } }
+
+    if(g_page_flag == 1)   /* 首页 */
+    {
+      uint8_t  temp, humi;
+      uint16_t li, lp;
+      osMutexAcquire(myMutex01Handle, 100);
+      temp = g_temp; humi = g_humi;
+      li = (uint16_t)(g_light_raw * 3300U / 4095U / 1000U);
+      lp = (uint16_t)(g_light_raw * 3300U / 4095U / 10U % 100U);
+      osMutexRelease(myMutex01Handle);
+
+      OLED_NewFrame();
+      OLED_ShowString(1,0,"Time:");
+      OLED_ShowString(1,2,"Humi:");
+      OLED_ShowString(1,3,"Temp:");
+      OLED_ShowString(1,4,"Light:");
+      OLED_ShowNum(8,3,temp,2);
+      OLED_ShowNum(8,2,humi,2);
+      OLED_ShowNum(8,4,li,1);
+      OLED_ShowChar(9,4,'.');
+      OLED_ShowNum(10,4,lp,2);
+      OLED_ShowNum(6,0,hour,2);
+      OLED_ShowNum(9,0,min,2);
+      OLED_ShowNum(12,0,s,2);
+      OLED_ShowChar(8,0,':');
+      OLED_ShowChar(11,0,':');
+      OLED_ShowFrame();
+    }
+    else if(g_page_flag == 2)   /* 配置页 */
+    {
+      const char *alarmStr;
+      uint8_t thr, period, arrow;
+      osMutexAcquire(myMutex01Handle, 100);
+      thr = g_threshold; period = g_period; arrow = g_arrow;
+      alarmStr = (g_auto_alarm == AUTO_ALARM_ON) ? "ON" : "OFF";
+      osMutexRelease(myMutex01Handle);
+
+      OLED_NewFrame();
+      OLED_ShowString(5,0,"CONFIG");
+      OLED_ShowString(0,1,"Period:");
+      OLED_ShowString(0,2,"AutoAlarm:");
+      OLED_ShowString(0,3,"Threshold:");
+      OLED_ShowNum(11,3,thr,2);
+      OLED_ShowChar(17,arrow,'<');
+      OLED_ShowString(12,2,(char*)alarmStr);
+      OLED_ShowNum(8,1,period,2);
+      OLED_ShowChar(10,1,'s');
+      OLED_ShowFrame();
+    }
+    osDelay(999);
+  }
+}</script>
+
+<script id="src-alarm" type="text/plain">#include "app_task.h"
+#include "app_data.h"
+#include "app_rtos.h"
+#include "app_config.h"
+#include "bsp_gpio.h"
+
+/**
+  * @brief  报警任务：[温度超阈值] 与 [自动报警开启] 同时成立时 LED 闪烁。
+  */
+void AlarmTask_Entry(void *argument)
+{
+  (void)argument;
+
+  for(;;)
+  {
+    uint32_t ret = osEventFlagsWait(AlarmEventHandle,
+                                    BIT_TEMP_OVER | BIT_AUTO_ALARM,
+                                    osFlagsWaitAll | osFlagsNoClear,
+                                    300);
+
+    uint8_t led;
+    osMutexAcquire(myMutex01Handle, osWaitForever);
+    if((ret & (BIT_TEMP_OVER | BIT_AUTO_ALARM)) == (BIT_TEMP_OVER | BIT_AUTO_ALARM))
+      g_led_flag = LED_MODE_BLINK;
+    else
+      g_led_flag = LED_MODE_OFF;
+    led = g_led_flag;
+    osMutexRelease(myMutex01Handle);
+
+    if(led == LED_MODE_BLINK)
+      bsp_gpio_toggle(LED_GPIO_Port, LED_Pin);
+    else
+      bsp_gpio_write(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+    osDelay(300);
+  }
+}</script>
+
+<script id="src-key" type="text/plain">#include "app_task.h"
+#include "app_data.h"
+#include "app_rtos.h"
+#include "app_config.h"
+#include "bsp_gpio.h"
+#include "main.h"
+
+#define PRESS_NONE   0U
+#define PRESS_SHORT  1U
+#define PRESS_LONG   2U
+
+/* 按键检测：消抖 + 长短按区分（>500ms 为长按） */
+static uint8_t Key_Detect(GPIO_TypeDef *Port, uint16_t Pin)
+{
+  osDelay(15);
+  if(bsp_gpio_read(Port, Pin) != GPIO_PIN_RESET) return PRESS_NONE;
+
+  uint32_t start = HAL_GetTick();
+  while(bsp_gpio_read(Port, Pin) == GPIO_PIN_RESET)
+  {
+    if((HAL_GetTick() - start) >= 500) return PRESS_LONG;
+    osDelay(1);
+  }
+  return PRESS_SHORT;
+}
+
+/**
+  * @brief  按键任务：Key1 短按移动箭头/长按切页；Key2 短按调参/长按恢复默认。
+  */
+void KeyTask_Entry(void *argument)
+{
+  (void)argument;
+
+  for(;;)
+  {
+    ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+    /* ---- Key1 ---- */
+    if(bsp_gpio_read(Key1_GPIO_Port, Key1_Pin) == GPIO_PIN_RESET)
+    {
+      uint8_t press = Key_Detect(Key1_GPIO_Port, Key1_Pin);
+      if(press == PRESS_LONG){
+        osMutexAcquire(myMutex01Handle, osWaitForever);
+        g_page_flag = (g_page_flag == 1) ? 2 : 1;
+        osMutexRelease(myMutex01Handle);
+      }
+      else if(press == PRESS_SHORT && g_page_flag == 2){
+        osMutexAcquire(myMutex01Handle, osWaitForever);
+        g_arrow = (g_arrow >= 7) ? 1 : (g_arrow + 1);
+        osMutexRelease(myMutex01Handle);
+      }
+    }
+
+    /* ---- Key2 ---- */
+    if(bsp_gpio_read(Key2_GPIO_Port, Key2_Pin) == GPIO_PIN_RESET)
+    {
+      uint8_t press = Key_Detect(Key2_GPIO_Port, Key2_Pin);
+      if(press == PRESS_SHORT && g_page_flag == 2){
+        osMutexAcquire(myMutex01Handle, osWaitForever);
+        switch(g_arrow){
+          case 1: g_period = (g_period >= PERIOD_U8_MAX) ? 1 : (g_period + 1); break;
+          case 2:
+            if(g_auto_alarm == AUTO_ALARM_OFF){ g_auto_alarm = AUTO_ALARM_ON;  osEventFlagsSet(AlarmEventHandle, BIT_AUTO_ALARM); }
+            else                               { g_auto_alarm = AUTO_ALARM_OFF; osEventFlagsClear(AlarmEventHandle, BIT_AUTO_ALARM); }
+            break;
+          case 3: g_threshold = (g_threshold >= THRESHOLD_MAX) ? 1 : (g_threshold + 1); break;
+          default: break;
+        }
+        osMutexRelease(myMutex01Handle);
+      }
+      else if(press == PRESS_LONG && g_page_flag == 2){
+        osMutexAcquire(myMutex01Handle, osWaitForever);
+        switch(g_arrow){
+          case 1: g_period = DEFAULT_PERIOD; break;
+          case 2: g_auto_alarm = AUTO_ALARM_OFF; osEventFlagsClear(AlarmEventHandle, BIT_AUTO_ALARM); break;
+          case 3: g_threshold = DEFAULT_THRESHOLD; break;
+          default: break;
+        }
+        osMutexRelease(myMutex01Handle);
+      }
+    }
+  }
+}</script>
+
+<script id="src-irq" type="text/plain">#include "main.h"
+#include "usart.h"
+#include "gpio.h"
+#include "adc.h"
+#include "FreeRTOS.h"
+#include "app_data.h"
+#include "app_rtos.h"
+#include "bsp_uart.h"
+#include "task.h"
+#include "semphr.h"
+
+/* UART 空闲中断：DMA 接收完成 -> 写入环形缓冲 -> 唤醒 SerialTask */
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+{
+  if(huart->Instance != USART1 || Size <= 0U) return;
+
+  rb_write_block(rb, dma_rx_buf, Size);
+  bsp_uart_rxStart(dma_rx_buf, sizeof(dma_rx_buf));
+
+  BaseType_t HigherPriorityTaskWoken = pdFALSE;
+  vTaskNotifyGiveFromISR(SerialTaskHandle, &HigherPriorityTaskWoken);
+  portYIELD_FROM_ISR(HigherPriorityTaskWoken);
+}
+
+/* ADC 转换完成：DMA 搬运完成 -> 释放信号量唤醒 CollectTask */
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+  if(hadc->Instance != ADC1) return;
+
+  BaseType_t HigherPriorityTaskWoken = pdFALSE;
+  xSemaphoreGiveFromISR(ADCBinarySemHandle, &HigherPriorityTaskWoken);
+  portYIELD_FROM_ISR(HigherPriorityTaskWoken);
+}
+
+/* GPIO 外部中断：按键触发 -> 唤醒 KeyTask */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  if(GPIO_Pin != Key1_Pin && GPIO_Pin != Key2_Pin) return;
+
+  BaseType_t HigherPriorityTaskWoken = pdFALSE;
+  vTaskNotifyGiveFromISR(KeyTaskHandle, &HigherPriorityTaskWoken);
+  portYIELD_FROM_ISR(HigherPriorityTaskWoken);
+}</script>
+
+<script id="src-main" type="text/plain">#include "main.h"
+#include "cmsis_os.h"
+#include "adc.h"
+#include "dma.h"
+#include "i2c.h"
+#include "spi.h"
+#include "tim.h"
+#include "usart.h"
+#include "gpio.h"
+
+void SystemClock_Config(void);
+void MX_FREERTOS_Init(void);
+
+int main(void)
+{
+  HAL_Init();
+  SystemClock_Config();
+
+  MX_GPIO_Init();
+  MX_DMA_Init();
+  MX_I2C1_Init();
+  MX_USART1_UART_Init();
+  MX_TIM2_Init();
+  MX_ADC1_Init();
+  MX_SPI1_Init();
+
+  osKernelInitialize();
+  MX_FREERTOS_Init();
+  osKernelStart();   /* 调度器启动，不再返回 */
+
+  while(1){}
+}
+
+/* 系统时钟：HSE 8MHz * PLL9 = 72MHz */
+void SystemClock_Config(void)
+{
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
+  HAL_RCC_OscConfig(&RCC_OscInitStruct);
+
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+  HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2);
+
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC;
+  PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV4;
+  HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
+}
+
+void Error_Handler(void)
+{
+  __disable_irq();
+  while(1){}
+}</script>
+
+<script>
+const map = {
+  c1:'src-app_config', c2:'src-app_data', c3:'src-freertos',
+  c4:'src-collect', c5:'src-serial', c6:'src-display',
+  c7:'src-alarm', c8:'src-key', c9:'src-irq', c10:'src-main'
+};
+for(const id in map){
+  const el = document.getElementById(id);
+  const src = document.getElementById(map[id]).textContent;
+  el.innerHTML = hl(src);
+}
+</script>
+
+</body>
+</html>
