@@ -1,0 +1,21 @@
+# ================= Keil MDK-ARM 编译产物 =================
+MDK-ARM/Monitoring/
+MDK-ARM/DebugConfig/
+MDK-ARM/EventRecorderStub.scvd
+MDK-ARM/*.uvguix.*
+MDK-ARM/*.uvoptx
+
+# ================= 常见编译/中间产物 =================
+*.o
+*.d
+*.crf
+*.axf
+*.hex
+*.htm
+*.lnp
+*.lst
+*.map
+*.dep
+*.iex
+*.sct
+*.build_log.htm
