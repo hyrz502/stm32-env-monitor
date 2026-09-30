@@ -1,11 +1,13 @@
 #include "main.h"
 #include "usart.h"
 #include "gpio.h"
+#include "adc.h"
 #include "Freertos.h"
 #include "app_data.h"
 #include "app_rtos.h"
 #include "bsp_uart.h"
 #include "task.h"
+#include "semphr.h"
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
@@ -20,6 +22,15 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 	portYIELD_FROM_ISR(HigherPriorityTaskWoken);
 }
 
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+	if(hadc->Instance!=ADC1) return;
+	
+	BaseType_t HigherPriorityTaskWoken=pdFALSE;
+	xSemaphoreGiveFromISR(ADCBinarySemHandle,&HigherPriorityTaskWoken);
+	portYIELD_FROM_ISR(HigherPriorityTaskWoken);
+}
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if(GPIO_Pin!=Key1_Pin&&GPIO_Pin!=Key2_Pin) return;
@@ -28,3 +39,4 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	vTaskNotifyGiveFromISR(KeyTaskHandle,&HigherPriorityTaskWoken);
 	portYIELD_FROM_ISR(HigherPriorityTaskWoken);
 }
+

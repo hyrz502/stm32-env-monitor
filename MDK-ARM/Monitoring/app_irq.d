@@ -39,6 +39,7 @@ monitoring\app_irq.o: ..\App\Inc\app_data.h
 monitoring\app_irq.o: ..\App\Inc\app_config.h
 monitoring\app_irq.o: ../Core/Inc/usart.h
 monitoring\app_irq.o: ../Core/Inc/gpio.h
+monitoring\app_irq.o: ../Core/Inc/adc.h
 monitoring\app_irq.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/Freertos.h
 monitoring\app_irq.o: ../Core/Inc/FreeRTOSConfig.h
 monitoring\app_irq.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
@@ -53,3 +54,5 @@ monitoring\app_irq.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
 monitoring\app_irq.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h
 monitoring\app_irq.o: ..\Bsp\Inc\bsp_uart.h
 monitoring\app_irq.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+monitoring\app_irq.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
+monitoring\app_irq.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h

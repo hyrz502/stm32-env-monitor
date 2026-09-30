@@ -49,4 +49,5 @@ monitoring\task_key.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wr
 monitoring\task_key.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
 monitoring\task_key.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
 monitoring\task_key.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h
+monitoring\task_key.o: ..\App\Inc\app_rtos.h
 monitoring\task_key.o: ..\Bsp\Inc\bsp_gpio.h

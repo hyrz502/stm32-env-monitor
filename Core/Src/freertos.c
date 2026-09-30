@@ -28,6 +28,7 @@
 #include "app_config.h"
 #include "app_rtos.h"
 #include  "app_task.h"
+#include "bsp_oled.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -131,7 +132,7 @@ void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
   */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
-
+	OLED_Init();
   /* USER CODE END Init */
   /* Create the mutex(es) */
   /* creation of myMutex01 */
@@ -205,11 +206,7 @@ void StartCollectTask(void *argument)
 {
   /* USER CODE BEGIN StartCollectTask */
   /* Infinite loop */
-	for(;;)
-	{
-		osThreadSuspend(osThreadGetId());		
-	}
-	
+	CollectTask_Entry(argument);
 	/* USER CODE END StartCollectTask */
 }
 
@@ -224,10 +221,7 @@ void StartShowTask(void *argument)
 {
   /* USER CODE BEGIN StartShowTask */
   /* Infinite loop */
-  for(;;)
-  {
-		osThreadSuspend(osThreadGetId());		
-  }
+	DisplayTask_Entry(argument);
   /* USER CODE END StartShowTask */
 }
 
@@ -259,10 +253,7 @@ void StartAlarmTask(void *argument)
 {
   /* USER CODE BEGIN StartAlarmTask */
   /* Infinite loop */
-  for(;;)
-  {
-		osThreadSuspend(osThreadGetId());		
-  }
+	AlarmTask_Entry(argument);
   /* USER CODE END StartAlarmTask */
 }
 
@@ -288,7 +279,7 @@ void StartKeyTask(void *argument)
 void Callback01(void *argument)
 {
   /* USER CODE BEGIN Callback01 */
-
+	xTaskNotifyGive(CollectTaskHandle);   /* 到达采集周期，唤醒采集任务 */
   /* USER CODE END Callback01 */
 }
 

@@ -50,3 +50,4 @@ monitoring\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/
 monitoring\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h
 monitoring\freertos.o: ..\App\Inc\app_rtos.h
 monitoring\freertos.o: ..\App\Inc\app_task.h
+monitoring\freertos.o: ..\Bsp\Inc\bsp_oled.h
