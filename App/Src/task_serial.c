@@ -46,12 +46,11 @@ static void App_SerialProcess(const uint8_t *frame, uint16_t len)
 	{
 		case CMD_GET_CURRENT:   /* 请求当前数据 */
 		{
-			uint16_t volt;
-			osMutexAcquire(myMutex01Handle, osWaitForever);
-			volt = (uint16_t)(g_light_raw * 3300U / 4095U);
+			AppDataSnapshot_t snap;
+			App_Data_GetSnapshot(&snap);   /* 一次加锁取回一致快照 */
+			uint16_t volt = (uint16_t)(snap.light_raw * 3300U / 4095U);
 			sprintf((char*)sendbuf, "Temp:%dC Light:%dmv Threshold:%dC Interval:%ds\r\n",
-			        g_temp, volt, g_threshold, g_period);
-			osMutexRelease(myMutex01Handle);
+			        snap.temp, volt, snap.threshold, snap.period);
 			bsp_uart_transmit(sendbuf, (uint32_t)strlen((char*)sendbuf), 200);
 		}
 		break;
@@ -59,9 +58,7 @@ static void App_SerialProcess(const uint8_t *frame, uint16_t len)
 		case CMD_SET_INTERVAL:   /* 设置采样间隔(1~60s) */
 			if(frame[3] >= 1 && frame[3] <= 60)
 			{
-				osMutexAcquire(myMutex01Handle, osWaitForever);
-				g_period = frame[3];
-				osMutexRelease(myMutex01Handle);
+				App_Data_SetPeriod(frame[3]);
 				ack = "OK\r\n";
 			}
 			else ack = "ERR\r\n";
@@ -71,9 +68,7 @@ static void App_SerialProcess(const uint8_t *frame, uint16_t len)
 		case CMD_SET_THRESHOLD:  /* 设置报警阈值(1~127) */
 			if(frame[3] >= 1 && frame[3] <= 127)
 			{
-				osMutexAcquire(myMutex01Handle, osWaitForever);
-				g_threshold = frame[3];
-				osMutexRelease(myMutex01Handle);
+				App_Data_SetThreshold(frame[3]);
 				ack = "OK\r\n";
 			}
 			else ack = "ERR\r\n";
@@ -81,22 +76,20 @@ static void App_SerialProcess(const uint8_t *frame, uint16_t len)
 			break;
 
 		case CMD_SET_LED:   /* 控制 LED: 0灭 1亮 2闪 */
-			osMutexAcquire(myMutex01Handle, osWaitForever);
 			if(frame[3] == 0)
 			{
-				g_led_flag = LED_MODE_OFF;
+				App_Data_SetLedFlag(LED_MODE_OFF);
 				bsp_gpio_write(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 			}
 			else if(frame[3] == 1)
 			{
-				g_led_flag = LED_MODE_ON;
+				App_Data_SetLedFlag(LED_MODE_ON);
 				bsp_gpio_write(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 			}
 			else if(frame[3] == 2)
 			{
-				g_led_flag = LED_MODE_BLINK;
+				App_Data_SetLedFlag(LED_MODE_BLINK);
 			}
-			osMutexRelease(myMutex01Handle);
 			break;
 
 		case CMD_GET_HISTORY:   /* 请求历史数据 */
@@ -115,20 +108,16 @@ static void App_SerialProcess(const uint8_t *frame, uint16_t len)
 		break;
 
 		case CMD_ALARM_SWITCH:  /* 自动报警开关：1=ON 其它=OFF */
-			osMutexAcquire(myMutex01Handle, osWaitForever);
 			if(frame[3] == 1)
 			{
-				g_auto_alarm = AUTO_ALARM_ON;
-				osEventFlagsSet(AlarmEventHandle, BIT_AUTO_ALARM);
+				App_Data_SetAutoAlarm(AUTO_ALARM_ON);
 				ack = "AutoAlarm ON\r\n";
 			}
 			else
 			{
-				g_auto_alarm = AUTO_ALARM_OFF;
-				osEventFlagsClear(AlarmEventHandle, BIT_AUTO_ALARM);
+				App_Data_SetAutoAlarm(AUTO_ALARM_OFF);
 				ack = "AutoAlarm OFF\r\n";
 			}
-			osMutexRelease(myMutex01Handle);
 			bsp_uart_transmit((uint8_t*)ack, (uint32_t)strlen(ack), 200);
 			break;
 

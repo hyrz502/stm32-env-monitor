@@ -17,20 +17,23 @@ void DisplayTask_Entry(void *argument)
 
 	for(;;)
 	{
+		AppDataSnapshot_t snap;
+
 		/* ---- 运行时钟（1s 递增） ---- */
 		if(++s >= 60) { s = 0; if(++min >= 60) { min = 0; if(++hour >= 24) hour = 0; } }
 
-		if(g_page_flag == 1)   /* 首页：时间 / 温湿度 / 光照 */
+		/* 一次加锁取回整页所需的全部数据 */
+		App_Data_GetSnapshot(&snap);
+
+		if(snap.page_flag == 1)   /* 首页：时间 / 温湿度 / 光照 */
 		{
 			uint8_t  temp, humi;
 			uint16_t light_v_int, light_v_poi;
 
-			osMutexAcquire(myMutex01Handle, 100);
-			temp = g_temp;
-			humi = g_humi;
-			light_v_int = (uint16_t)(g_light_raw * 3300U / 4095U / 1000U);
-			light_v_poi = (uint16_t)(g_light_raw * 3300U / 4095U / 10U % 100U);
-			osMutexRelease(myMutex01Handle);
+			temp = snap.temp;
+			humi = snap.humi;
+			light_v_int = (uint16_t)(snap.light_raw * 3300U / 4095U / 1000U);
+			light_v_poi = (uint16_t)(snap.light_raw * 3300U / 4095U / 10U % 100U);
 
 			OLED_NewFrame();
 			OLED_ShowString(1,0,"Time:");
@@ -51,17 +54,15 @@ void DisplayTask_Entry(void *argument)
 			OLED_ShowChar(11,0,':');
 			OLED_ShowFrame();
 		}
-		else if(g_page_flag == 2)   /* 配置页：周期 / 报警开关 / 阈值 */
+		else if(snap.page_flag == 2)   /* 配置页：周期 / 报警开关 / 阈值 */
 		{
 			const char *alarmStr;
 			uint8_t thr, period, arrow;
 
-			osMutexAcquire(myMutex01Handle, 100);
-			thr   = g_threshold;
-			period= g_period;
-			arrow = g_arrow;
-			alarmStr = (g_auto_alarm == AUTO_ALARM_ON) ? "ON" : "OFF";
-			osMutexRelease(myMutex01Handle);
+			thr    = snap.threshold;
+			period = snap.period;
+			arrow  = snap.arrow;
+			alarmStr = (snap.auto_alarm == AUTO_ALARM_ON) ? "ON" : "OFF";
 
 			OLED_NewFrame();
 			OLED_ShowString(5,0,"CONFIG");

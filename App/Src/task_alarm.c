@@ -20,17 +20,15 @@ void AlarmTask_Entry(void *argument)
 		                                300);
 
 		uint8_t led;
-		osMutexAcquire(myMutex01Handle, osWaitForever);
 		if((ret & (BIT_TEMP_OVER | BIT_AUTO_ALARM)) == (BIT_TEMP_OVER | BIT_AUTO_ALARM))
 		{
-			g_led_flag = LED_MODE_BLINK;
+			led = LED_MODE_BLINK;
 		}
 		else
 		{
-			g_led_flag = LED_MODE_OFF;
+			led = LED_MODE_OFF;
 		}
-		led = g_led_flag;
-		osMutexRelease(myMutex01Handle);
+		App_Data_SetLedFlag(led);   /* 内部加锁更新共享 LED 模式 */
 
 		if(led == LED_MODE_BLINK)
 		{
